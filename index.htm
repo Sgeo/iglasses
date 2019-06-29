@@ -22,6 +22,7 @@
   
 
   <canvas id="webgl"></canvas>
+  <button id="fullscreen">Fullscreen</button>
   </body>
   
   
@@ -109,6 +110,10 @@ void main() {
         main(["-c", "GRID.EXE -t"])
       });
     });
+	
+	document.querySelector("#fullscreen").addEventListener("click", function(e) {
+		document.querySelector("#webgl").requestFullscreen();
+	});
   </script>
 
 
