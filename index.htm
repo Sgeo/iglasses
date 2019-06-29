@@ -96,15 +96,27 @@ void main() {
     }
     requestAnimationFrame(render);
   </script>
-    <script src="js-dos.js"></script>
-	  <script>
-    Dos(document.getElementById("jsdos"), { 
-        wdosboxUrl: "wdosbox.js" 
-    }).ready((fs, main) => {
-      fs.extract("grid.zip").then(() => {
-        main(["-c", "GRID.EXE -t"])
-      });
-    });
+    <script type="text/javascript" src="browserfs.min.js"></script>
+    <script type="text/javascript" src="loader.js"></script>
+    <script type="text/javascript">
+      var emulator = new Emulator(document.querySelector("#jsdos"),
+                                  null,
+                                  new DosBoxLoader(DosBoxLoader.emulatorJS("dosbox-sync.js"),
+                                                   DosBoxLoader.locateAdditionalEmulatorJS(locateAdditionalFiles),
+                                                   DosBoxLoader.nativeResolution(640, 400),
+                                                   DosBoxLoader.mountZip("c",
+                                                                         DosBoxLoader.fetchFile("Game File",
+                                                                                                "grid.zip")),
+                                                   DosBoxLoader.startExe("grid.exe -t")))
+      emulator.start({ });
+      function locateAdditionalFiles(filename) {
+        if (filename === "dosbox.html.mem") {
+          return "dosbox-sync.mem";
+        }
+        return filename;
+      }
+    </script>
+	<script type="text/javascript">
 	
 	document.querySelector("#fullscreen").addEventListener("click", function(e) {
 		document.querySelector("#webgl").requestFullscreen();
