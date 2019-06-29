@@ -45,9 +45,6 @@ out vec4 fragColor;
 
 void main() {
   vec2 uv = gl_FragCoord.xy / resolution.xy;
-  // Temporary hack because of weirdly flipped textures
-  //uv.x = 1.0 - uv.x;
-  uv.y = 1.0 - uv.y;
   
   ivec2 coords = ivec2(uv * vec2(textureSize(jsdos, 0)));
   coords.x *= 2;
@@ -59,11 +56,7 @@ void main() {
   // So if we're on the left, offset by 1 to get odd pixels.
   
   
-  //coords.y += 1 - int(step(0.5, uv.x));
-  
-  // Temporary hack because of flipped-ness:
-  
-  coords.y += 1 - int(1.0-step(0.5, uv.x));
+  coords.y += 1 - int(step(0.5, uv.x));
   
 
   fragColor = texelFetch(jsdos, coords, 0);
@@ -85,6 +78,7 @@ void main() {
     function render(time) {
       twgl.resizeCanvasToDisplaySize(gl.canvas);
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+	  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
 	  const jsdosTexture = twgl.createTexture(gl, { src: jsdosCanvas });
 
       const uniforms = {
