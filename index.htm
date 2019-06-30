@@ -23,7 +23,7 @@
 
   <canvas id="webgl"></canvas>
   <button id="fullscreen">Fullscreen</button>
-  </body>
+  
   
   
     <script id="vs" type="notjs">#version 300 es
@@ -40,6 +40,7 @@ precision mediump float;
 
 uniform vec2 resolution;
 uniform sampler2D jsdos;
+uniform int side;
 
 out vec4 fragColor;
 
@@ -47,7 +48,6 @@ void main() {
   vec2 uv = gl_FragCoord.xy / resolution.xy;
   
   ivec2 coords = ivec2(uv * vec2(textureSize(jsdos, 0)));
-  coords.x *= 2;
   coords.y = coords.y/2*2; // Round down to even y coordinate.
   
   coords = coords%textureSize(jsdos, 0);
@@ -56,7 +56,7 @@ void main() {
   // So if we're on the left, offset by 1 to get odd pixels.
   
   
-  coords.y += 1 - int(step(0.5, uv.x));
+  coords.y += 1 - side;
   
 
   fragColor = texelFetch(jsdos, coords, 0);
@@ -78,20 +78,24 @@ void main() {
 
     function render(time) {
       twgl.resizeCanvasToDisplaySize(gl.canvas);
-      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+      
 	  
 	  const jsdosTexture = twgl.createTexture(gl, { src: jsdosCanvas });
 
+	  gl.viewport(0, 0, gl.canvas.width/2, gl.canvas.height);
       const uniforms = {
-        resolution: [gl.canvas.width, gl.canvas.height],
-		jsdos: jsdosTexture
+        resolution: [gl.canvas.width/2, gl.canvas.height],
+		jsdos: jsdosTexture,
+		side: 0
       };
 
       gl.useProgram(programInfo.program);
       twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
       twgl.setUniforms(programInfo, uniforms);
       twgl.drawBufferInfo(gl, bufferInfo);
-
+	  gl.viewport(gl.canvas.width/2, 0, gl.canvas.width/2, gl.canvas.height);
+	  twgl.setUniforms(programInfo, {side: 1});
+      twgl.drawBufferInfo(gl, bufferInfo);
       requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
@@ -118,7 +122,6 @@ void main() {
         }
       });
       emulator.start({ });
-      Module['websocket']['on']('error', function(error) {console.log('Socket error ' + error);});
       function locateAdditionalFiles(filename) {
         return filename;
       }
@@ -129,6 +132,6 @@ void main() {
 		document.querySelector("#webgl").requestFullscreen();
 	});
   </script>
-
+</body>
 
 </html>
