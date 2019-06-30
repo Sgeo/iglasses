@@ -111,8 +111,14 @@ void main() {
 												   DosBoxLoader.mountFile("dosbox.conf", DosBoxLoader.localFile("DosBox.conf", "[serial]\nserial1=nullmodem server:tracker.invalid port:8000 transparent:1 telnet:0")),
                                                    DosBoxLoader.startExe("grid.exe -t"),
 												   DosBoxLoader.extraArgs(["-conf", "dosbox.conf"])));
-
+                                                   
+      emulator.setCallbacks({
+        before_run: function() {
+          Module['websocket']['on']('error', function(error) {console.log('Socket error ' + error);});
+        }
+      });
       emulator.start({ });
+      Module['websocket']['on']('error', function(error) {console.log('Socket error ' + error);});
       function locateAdditionalFiles(filename) {
         return filename;
       }
