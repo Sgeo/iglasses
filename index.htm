@@ -101,18 +101,24 @@ void main() {
     <script type="text/javascript">
       var emulator = new Emulator(document.querySelector("#jsdos"),
                                   null,
-                                  new DosBoxLoader(DosBoxLoader.emulatorJS("dosbox-sync.js"),
+                                  new DosBoxLoader(DosBoxLoader.emulatorJS("dosbox.wasm.js"),
                                                    DosBoxLoader.locateAdditionalEmulatorJS(locateAdditionalFiles),
                                                    DosBoxLoader.nativeResolution(640, 400),
                                                    DosBoxLoader.mountZip("c",
                                                                          DosBoxLoader.fetchFile("Game File",
                                                                                                 "grid.zip")),
-                                                   DosBoxLoader.startExe("grid.exe -t")))
+												   DosBoxLoader.mountFile("dosbox.conf", DosBoxLoader.localFile("DosBox.conf", "[serial]\nserial1=nullmodem port:8000 transparent:1 telnet:0")),
+                                                   DosBoxLoader.startExe("grid.exe -t"),
+												   DosBoxLoader.extraArgs(["-conf", "dosbox.conf"])));
+	  emulator.setCallbacks({
+	       before_emulator: function() {
+		   fetch("dosbox.wasm").then(response => response.arrayBuffer()).then(function(code) {
+		    Module.wasmBinary = code;
+		   });
+          }
+	  });
       emulator.start({ });
       function locateAdditionalFiles(filename) {
-        if (filename === "dosbox.html.mem") {
-          return "dosbox-sync.mem";
-        }
         return filename;
       }
     </script>
