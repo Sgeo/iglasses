@@ -23,6 +23,7 @@
 
   <canvas id="webgl"></canvas>
   <button id="fullscreen">Fullscreen</button>
+  <button id="webvr-button" disabled>WebVR (under construction)</button>
   
   
   
@@ -96,7 +97,13 @@ void main() {
 	  gl.viewport(gl.canvas.width/2, 0, gl.canvas.width/2, gl.canvas.height);
 	  twgl.setUniforms(programInfo, {side: 1});
       twgl.drawBufferInfo(gl, bufferInfo);
-      requestAnimationFrame(render);
+	  if(window.vrDisplay && window.vrDisplay.isPresenting) {
+		vrDisplay.submitFrame();
+		vrDisplay.requestAnimationFrame(render);
+	  } else {
+		requestAnimationFrame(render);
+	  }
+      
     }
     requestAnimationFrame(render);
   </script>
@@ -130,6 +137,17 @@ void main() {
 	
 	document.querySelector("#fullscreen").addEventListener("click", function(e) {
 		document.querySelector("#webgl").requestFullscreen();
+	});
+	
+	if(navigator.getVRDisplays) {
+		navigator.getVRDisplays().then(displays => {
+			window.vrDisplay = displays[0];
+			document.querySelector("#webvr-button").disabled = false;
+		});
+	}
+	
+	document.querySelector("#webvr-button").addEventListener("click", async function(e) {
+		await vrDisplay.requestPresent([{ source: document.querySelector("#webgl") }]);
 	});
   </script>
 </body>
