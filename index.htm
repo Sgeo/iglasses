@@ -73,8 +73,11 @@ void main() {
 		leftDegrees: 15,
 		rightDegrees: 15
 	};
-	function viewportFromFov(fov) {
-		
+	const IGLASSES_FOV_TAN = {
+		down: Math.tan(IGLASSES_FOV.downDegrees * Math.PI/180),
+		up: Math.tan(IGLASSES_FOV.upDegrees * Math.PI/180),
+		left: Math.tan(IGLASSES_FOV.leftDegrees * Math.PI/180),
+		right: Math.tan(IGLASSES_FOV.rightDegrees * Math.PI/180)
 	}
   </script>
   <script>
