@@ -64,14 +64,25 @@ void main() {
   //fragColor = texelFetch(jsdos, ivec2(0, 0), 0);
 }
   </script>
-  <script src="twgl.min.js"></script>
+  <script src="twgl-full.min.js"></script>
+  <script>
+	const IGLASSES_FOV = {
+		downDegrees: 11,
+		upDegrees: 11,
+		leftDegrees: 15,
+		rightDegrees: 15
+	};
+	function viewportFromFov(fov) {
+		
+	}
+  </script>
   <script>
     "use strict";
     const gl = document.querySelector("#webgl").getContext("webgl2");
     const programInfo = twgl.createProgramInfo(gl, ["vs", "fs"]);
 
     const arrays = {
-      position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
+      position: [-1, -1, -1, 1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, 1, -1],
     };
 	const jsdosCanvas = document.querySelector("#jsdos");
     const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
