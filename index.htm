@@ -45,7 +45,6 @@ precision mediump float;
 
 in vec2 uvV;
 
-uniform vec2 resolution;
 uniform sampler2D jsdos;
 uniform int side;
 
@@ -136,7 +135,6 @@ void main() {
 		projection = twgl.m4.identity();
 	  }
       const uniforms = {
-        resolution: [gl.canvas.width/2, gl.canvas.height],
 		jsdos: jsdosTexture,
 		side: 0,
 		projection: projection
