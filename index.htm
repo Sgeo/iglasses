@@ -78,15 +78,25 @@ void main() {
 		up: Math.tan(IGLASSES_FOV.upDegrees * Math.PI/180),
 		left: Math.tan(IGLASSES_FOV.leftDegrees * Math.PI/180),
 		right: Math.tan(IGLASSES_FOV.rightDegrees * Math.PI/180)
-	}
+	};
   </script>
   <script>
     "use strict";
     const gl = document.querySelector("#webgl").getContext("webgl2");
     const programInfo = twgl.createProgramInfo(gl, ["vs", "fs"]);
+	let left = IGLASSES_FOV_TAN.left;
+	let right = IGLASSES_FOV_TAN.right;
+	let up = IGLASSES_FOV_TAN.up;
+	let down = IGLASSES_FOV_TAN.down;
 
     const arrays = {
-      position: [-1, -1, -1, 1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, 1, -1],
+      position: [
+	  -left, -down, -1,
+	  right, -down, -1,
+	  -left, up, -1,
+	  -left, up, -1,
+	  right, -down, -1,
+	  right, up, -1],
     };
 	const jsdosCanvas = document.querySelector("#jsdos");
     const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
