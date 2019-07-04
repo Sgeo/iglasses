@@ -29,9 +29,10 @@
   
     <script id="vs" type="notjs">#version 300 es
 in vec4 position;
+uniform mat4 projection;
 
 void main() {
-  gl_Position = position;
+  gl_Position = projection * position;
 }
   </script>
   <script id="fs" type="notjs">#version 300 es
@@ -89,16 +90,30 @@ void main() {
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
     function render(time) {
+	  let vr = window.vrDisplay && window.vrDisplay.isPresenting;
       twgl.resizeCanvasToDisplaySize(gl.canvas);
       
 	  
 	  const jsdosTexture = twgl.createTexture(gl, { src: jsdosCanvas });
 
 	  gl.viewport(0, 0, gl.canvas.width/2, gl.canvas.height);
+	  
+	  if(vr) {
+		var frameData = new VRFrameData();
+		vrDisplay.getFrameData(frameData);
+	  }
+	  
+	  let projection;
+	  if(vr) {
+		projection = frameData.leftProjectionMatrix;
+	  } else {
+		projection = twgl.m4.identity();
+	  }
       const uniforms = {
         resolution: [gl.canvas.width/2, gl.canvas.height],
 		jsdos: jsdosTexture,
-		side: 0
+		side: 0,
+		projection: projection
       };
 
       gl.useProgram(programInfo.program);
@@ -106,6 +121,10 @@ void main() {
       twgl.setUniforms(programInfo, uniforms);
       twgl.drawBufferInfo(gl, bufferInfo);
 	  gl.viewport(gl.canvas.width/2, 0, gl.canvas.width/2, gl.canvas.height);
+	  if(vr) {
+		projection = frameData.rightProjectionMatrix;
+		twgl.setUniforms(programInfo, {projection: projection});
+	  }
 	  twgl.setUniforms(programInfo, {side: 1});
       twgl.drawBufferInfo(gl, bufferInfo);
 	  if(window.vrDisplay && window.vrDisplay.isPresenting) {
