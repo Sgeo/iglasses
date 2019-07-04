@@ -71,92 +71,92 @@ void main() {
   </script>
   <script src="twgl-full.min.js"></script>
   <script>
-	const IGLASSES_FOV = {
-		downDegrees: 30,
-		upDegrees: 30,
-		leftDegrees: 30,
-		rightDegrees: 30
-	};
-	const IGLASSES_FOV_TAN = {
-		down: Math.tan(IGLASSES_FOV.downDegrees * Math.PI/180),
-		up: Math.tan(IGLASSES_FOV.upDegrees * Math.PI/180),
-		left: Math.tan(IGLASSES_FOV.leftDegrees * Math.PI/180),
-		right: Math.tan(IGLASSES_FOV.rightDegrees * Math.PI/180)
-	};
+    const IGLASSES_FOV = {
+        downDegrees: 30,
+        upDegrees: 30,
+        leftDegrees: 30,
+        rightDegrees: 30
+    };
+    const IGLASSES_FOV_TAN = {
+        down: Math.tan(IGLASSES_FOV.downDegrees * Math.PI/180),
+        up: Math.tan(IGLASSES_FOV.upDegrees * Math.PI/180),
+        left: Math.tan(IGLASSES_FOV.leftDegrees * Math.PI/180),
+        right: Math.tan(IGLASSES_FOV.rightDegrees * Math.PI/180)
+    };
   </script>
   <script>
     "use strict";
     const gl = document.querySelector("#webgl").getContext("webgl2");
     const programInfo = twgl.createProgramInfo(gl, ["vs", "fs"]);
-	let left = IGLASSES_FOV_TAN.left;
-	let right = IGLASSES_FOV_TAN.right;
-	let up = IGLASSES_FOV_TAN.up;
-	let down = IGLASSES_FOV_TAN.down;
+    let left = IGLASSES_FOV_TAN.left;
+    let right = IGLASSES_FOV_TAN.right;
+    let up = IGLASSES_FOV_TAN.up;
+    let down = IGLASSES_FOV_TAN.down;
 
     const arrays = {
       position: [
-	  -left, -down, -1,
-	  right, -down, -1,
-	  -left, up, -1,
-	  -left, up, -1,
-	  right, -down, -1,
-	  right, up, -1],
-	  uv: {numComponents: 2, data: [
-	    0, 0,
-		1, 0,
-		0, 1,
-		0, 1,
-		1, 0,
-		1, 1
-	  ]}
+      -left, -down, -1,
+      right, -down, -1,
+      -left, up, -1,
+      -left, up, -1,
+      right, -down, -1,
+      right, up, -1],
+      uv: {numComponents: 2, data: [
+        0, 0,
+        1, 0,
+        0, 1,
+        0, 1,
+        1, 0,
+        1, 1
+      ]}
     };
-	const jsdosCanvas = document.querySelector("#jsdos");
+    const jsdosCanvas = document.querySelector("#jsdos");
     const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
-	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
     function render(time) {
-	  let vr = window.vrDisplay && window.vrDisplay.isPresenting;
+      let vr = window.vrDisplay && window.vrDisplay.isPresenting;
       twgl.resizeCanvasToDisplaySize(gl.canvas);
       
-	  
-	  const jsdosTexture = twgl.createTexture(gl, { src: jsdosCanvas });
+      
+      const jsdosTexture = twgl.createTexture(gl, { src: jsdosCanvas });
 
-	  gl.viewport(0, 0, gl.canvas.width/2, gl.canvas.height);
-	  
-	  if(vr) {
-		var frameData = new VRFrameData();
-		vrDisplay.getFrameData(frameData);
-	  }
-	  
-	  let projection;
-	  if(vr) {
-		projection = frameData.leftProjectionMatrix;
-	  } else {
-		projection = twgl.m4.identity();
-	  }
+      gl.viewport(0, 0, gl.canvas.width/2, gl.canvas.height);
+      
+      if(vr) {
+        var frameData = new VRFrameData();
+        vrDisplay.getFrameData(frameData);
+      }
+      
+      let projection;
+      if(vr) {
+        projection = frameData.leftProjectionMatrix;
+      } else {
+        projection = twgl.m4.identity();
+      }
       const uniforms = {
-		jsdos: jsdosTexture,
-		side: 0,
-		projection: projection
+        jsdos: jsdosTexture,
+        side: 0,
+        projection: projection
       };
 
       gl.useProgram(programInfo.program);
       twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
       twgl.setUniforms(programInfo, uniforms);
       twgl.drawBufferInfo(gl, bufferInfo);
-	  gl.viewport(gl.canvas.width/2, 0, gl.canvas.width/2, gl.canvas.height);
-	  if(vr) {
-		projection = frameData.rightProjectionMatrix;
-		twgl.setUniforms(programInfo, {projection: projection});
-	  }
-	  twgl.setUniforms(programInfo, {side: 1});
+      gl.viewport(gl.canvas.width/2, 0, gl.canvas.width/2, gl.canvas.height);
+      if(vr) {
+        projection = frameData.rightProjectionMatrix;
+        twgl.setUniforms(programInfo, {projection: projection});
+      }
+      twgl.setUniforms(programInfo, {side: 1});
       twgl.drawBufferInfo(gl, bufferInfo);
-	  if(window.vrDisplay && window.vrDisplay.isPresenting) {
-		vrDisplay.submitFrame();
-		vrDisplay.requestAnimationFrame(render);
-	  } else {
-		requestAnimationFrame(render);
-	  }
+      if(window.vrDisplay && window.vrDisplay.isPresenting) {
+        vrDisplay.submitFrame();
+        vrDisplay.requestAnimationFrame(render);
+      } else {
+        requestAnimationFrame(render);
+      }
       
     }
     requestAnimationFrame(render);
@@ -173,9 +173,9 @@ void main() {
                                                    DosBoxLoader.mountZip("c",
                                                                          DosBoxLoader.fetchFile("Game File",
                                                                                                 "grid.zip")),
-												   DosBoxLoader.mountFile("dosbox.conf", DosBoxLoader.localFile("DosBox.conf", "[serial]\nserial1=nullmodem server:tracker.invalid port:8000 transparent:1 telnet:0")),
+                                                   DosBoxLoader.mountFile("dosbox.conf", DosBoxLoader.localFile("DosBox.conf", "[serial]\nserial1=nullmodem server:tracker.invalid port:8000 transparent:1 telnet:0")),
                                                    DosBoxLoader.startExe("grid.exe -t"),
-												   DosBoxLoader.extraArgs(["-conf", "dosbox.conf"])));
+                                                   DosBoxLoader.extraArgs(["-conf", "dosbox.conf"])));
                                                    
       emulator.setCallbacks({
         before_run: function() {
@@ -187,22 +187,22 @@ void main() {
         return filename;
       }
     </script>
-	<script type="text/javascript">
-	
-	document.querySelector("#fullscreen").addEventListener("click", function(e) {
-		document.querySelector("#webgl").requestFullscreen();
-	});
-	
-	if(navigator.getVRDisplays) {
-		navigator.getVRDisplays().then(displays => {
-			window.vrDisplay = displays[0];
-			document.querySelector("#webvr-button").disabled = false;
-		});
-	}
-	
-	document.querySelector("#webvr-button").addEventListener("click", async function(e) {
-		await vrDisplay.requestPresent([{ source: document.querySelector("#webgl") }]);
-	});
+    <script type="text/javascript">
+    
+    document.querySelector("#fullscreen").addEventListener("click", function(e) {
+        document.querySelector("#webgl").requestFullscreen();
+    });
+    
+    if(navigator.getVRDisplays) {
+        navigator.getVRDisplays().then(displays => {
+            window.vrDisplay = displays[0];
+            document.querySelector("#webvr-button").disabled = false;
+        });
+    }
+    
+    document.querySelector("#webvr-button").addEventListener("click", async function(e) {
+        await vrDisplay.requestPresent([{ source: document.querySelector("#webgl") }]);
+    });
   </script>
 </body>
 
