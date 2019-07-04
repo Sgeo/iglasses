@@ -29,9 +29,12 @@
   
     <script id="vs" type="notjs">#version 300 es
 in vec4 position;
+in vec2 uv;
+out vec2 uvV;
 uniform mat4 projection;
 
 void main() {
+  uvV = uv;
   gl_Position = projection * position;
 }
   </script>
@@ -40,6 +43,8 @@ void main() {
   
 precision mediump float;
 
+in vec2 uvV;
+
 uniform vec2 resolution;
 uniform sampler2D jsdos;
 uniform int side;
@@ -47,7 +52,7 @@ uniform int side;
 out vec4 fragColor;
 
 void main() {
-  vec2 uv = gl_FragCoord.xy / resolution.xy;
+  vec2 uv = uvV;
   
   ivec2 coords = ivec2(uv * vec2(textureSize(jsdos, 0)));
   coords.y = coords.y/2*2; // Round down to even y coordinate.
@@ -68,10 +73,10 @@ void main() {
   <script src="twgl-full.min.js"></script>
   <script>
 	const IGLASSES_FOV = {
-		downDegrees: 45,
-		upDegrees: 45,
-		leftDegrees: 45,
-		rightDegrees: 45
+		downDegrees: 30,
+		upDegrees: 30,
+		leftDegrees: 30,
+		rightDegrees: 30
 	};
 	const IGLASSES_FOV_TAN = {
 		down: Math.tan(IGLASSES_FOV.downDegrees * Math.PI/180),
@@ -97,6 +102,14 @@ void main() {
 	  -left, up, -1,
 	  right, -down, -1,
 	  right, up, -1],
+	  uv: {numComponents: 2, data: [
+	    0, 0,
+		1, 0,
+		0, 1,
+		0, 1,
+		1, 0,
+		1, 1
+	  ]}
     };
 	const jsdosCanvas = document.querySelector("#jsdos");
     const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
