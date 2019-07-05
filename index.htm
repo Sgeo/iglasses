@@ -163,6 +163,7 @@ void main() {
   </script>
     <script type="text/javascript" src="browserfs.min.js"></script>
     <script type="text/javascript" src="loader.js"></script>
+    <script type="text/javascript" src="tracker.js"></script>
     <script type="text/javascript">
       var emulator = new Emulator(document.querySelector("#jsdos"),
                                   null,
@@ -174,11 +175,13 @@ void main() {
                                                                          DosBoxLoader.fetchFile("Game File",
                                                                                                 "grid.zip")),
                                                    DosBoxLoader.mountFile("dosbox.conf", DosBoxLoader.localFile("DosBox.conf", "[serial]\nserial1=nullmodem server:tracker.invalid port:8000 transparent:1 telnet:0")),
-                                                   DosBoxLoader.startExe("grid.exe -t"),
+                                                   DosBoxLoader.startExe(""),
                                                    DosBoxLoader.extraArgs(["-conf", "dosbox.conf"])));
                                                    
       emulator.setCallbacks({
         before_run: function() {
+          var tracker = new Tracker();
+          tracker.install(SOCKFS);
           Module['websocket']['on']('error', function(error) {console.log('Socket error ' + error);});
         }
       });
