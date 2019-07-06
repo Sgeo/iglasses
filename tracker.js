@@ -58,8 +58,8 @@ class Tracker {
         let x = 1.0;
         let y = 0.0;
         let z = 0.0;
-        let pitch = 0.0; // Degrees
-        let roll = 0.0; // Degrees 
+        let pitch = window.pitch || 0.0; // Degrees
+        let roll = window.roll || 0.0; // Degrees 
         
         let result = new ArrayBuffer(12);
         let view = new DataView(result);
