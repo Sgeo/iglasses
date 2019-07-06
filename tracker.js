@@ -54,11 +54,18 @@ class Tracker {
     }
     
     orientation() {
-        let x = 1.0;
-        let y = 0.0;
-        let z = 0.0;
-        let pitch = window.pitch || 0.0; // Degrees
-        let roll = window.roll || 0.0; // Degrees 
+
+        let pitch = window.pitch || 0.0; // Radians
+        let roll = window.roll || 0.0; // Radians
+        
+        let absolute_x = Math.cos(window.yaw || 0.0);
+        let absolute_y = 0.0;
+        let absolute_z = Math.sin(window.yaw || 0.0);
+        
+        let antirotation = twgl.m4.identity();
+        twgl.m4.rotateZ(antirotation, -roll, antirotation);
+        twgl.m4.rotateX(antirotation, -pitch, antirotation);
+        let [x, y, z] = twgl.m4.transformDirection(antirotation, [absolute_x, absolute_y, absolute_z]);
         
         let result = new ArrayBuffer(12);
         let view = new DataView(result);
@@ -66,8 +73,8 @@ class Tracker {
         view.setInt16(1, x * 16384, false);
         view.setInt16(3, y * 16384, false);
         view.setInt16(5, z * 16384, false);
-        view.setInt16(7, pitch/180*16384, false);
-        view.setInt16(9, roll/180*16384, false);
+        view.setInt16(7, pitch/Math.PI*16384, false);
+        view.setInt16(9, roll/Math.PI*16384, false);
         let checksum = 0;
         for(let i=0; i<=10; i++) {
             checksum += view.getUint8(i);
