@@ -14,11 +14,11 @@ class Tracker {
     dispatch(command) {
         if(command === "!\r") {
             console.log("Pinged!");
-            this.reply = this.OK;
+            return this.OK;
         } else if(command.startsWith("!M")) {
-            this.mode(command.slice(2, -1)); // Remove !M and \r
+            return this.mode(command.slice(2, -1)); // Remove !M and \r
         } else if(command === "!R\r") {
-            this.mode("1,P,B");
+            return this.mode("1,P,B");
         }
     }
     
@@ -30,17 +30,15 @@ class Tracker {
             this.data_mode = "euler";
         } else {
             console.error("Unsupported data mode:", data_mode);
-            this.reply = this.ERR;
-            return;
+            return this.ERR;
         }
         if(send_mode === "P") {
             this.send_mode = "polled";
         } else {
             console.error("Unsupported send mode:", send_mode);
-            this.reply = this.ERR;
-            return;
+            return this.ERR;
         }
-        this.reply = this.OK;
+        return this.OK;
     }
     
     install(sockfs) {
@@ -72,7 +70,7 @@ class Tracker {
             let incoming = buffer.slice(offset, offset+length);
             let command = tracker.decoder.decode(incoming);
             console.log(command);
-            tracker.dispatch(command);
+            tracker.reply = tracker.dispatch(command);
             return length;
         };
         sockfs.websocket_sock_ops = new Proxy(sockfs.websocket_sock_ops, {
