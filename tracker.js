@@ -18,12 +18,28 @@ class Tracker {
             //return result;
             throw new FS.ErrnoError(ERRNO_CODES.EINPROGRESS);
         };
+        sockfs.websocket_sock_ops.poll = function() {
+            // POLLIN = 0x01
+            // POLLOUT = 0x04
+            return 0x04
+        };
+        sockfs.websocket_sock_ops.recvmsg = function() {
+            return {
+                buffer: new Uint8Array(1),
+                addr: "tracker.invalid",
+                port: 8000
+            }
+        };
+        sockfs.websocket_sock_ops.sendmsg = function(sock, buffer, offset, length, addr, port) {
+            console.log(buffer.slice(offset, offset+length));
+            return 0;
+        };
         sockfs.websocket_sock_ops = new Proxy(sockfs.websocket_sock_ops, {
             get(target, prop) {
                 return function(...args) {
-                    console.log(prop, "(", args, ")");
+                    if(prop !== "poll") console.log(prop, "(", args, ")");
                     let result = target[prop].apply(this, args);
-                    console.log(prop, " = ", result);
+                    if(prop !== "poll") console.log(prop, " = ", result);
                     return result;
                 }
             }
