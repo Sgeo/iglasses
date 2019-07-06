@@ -1,8 +1,19 @@
 class Tracker {
     constructor() {
+        this.encoder = new TextEncoder();
+        this.decoder = new TextDecoder();
+        this.reply = null;
+    }
+    
+    dispatch(command) {
+        if(command === "!\r") {
+            console.log("Pinged!");
+            this.reply = this.encoder.encode("O");
+        }
     }
     
     install(sockfs) {
+        let tracker = this;
         console.log(sockfs);
         let createPeer = sockfs.websocket_sock_ops.createPeer;
         let connect = sockfs.websocket_sock_ops.connect;
@@ -21,18 +32,27 @@ class Tracker {
         sockfs.websocket_sock_ops.poll = function() {
             // POLLIN = 0x01
             // POLLOUT = 0x04
-            return 0x04
+            if(tracker.reply) {
+                return 0x05;
+            } else {
+                return 0x04;
+            }
         };
         sockfs.websocket_sock_ops.recvmsg = function() {
+            let reply = tracker.reply;
+            tracker.reply = null;
             return {
-                buffer: new Uint8Array(1),
+                buffer: reply,
                 addr: "tracker.invalid",
                 port: 8000
             }
         };
         sockfs.websocket_sock_ops.sendmsg = function(sock, buffer, offset, length, addr, port) {
-            console.log(buffer.slice(offset, offset+length));
-            return 0;
+            let incoming = buffer.slice(offset, offset+length);
+            let command = tracker.decoder.decode(incoming);
+            console.log(command);
+            tracker.dispatch(command);
+            return length;
         };
         sockfs.websocket_sock_ops = new Proxy(sockfs.websocket_sock_ops, {
             get(target, prop) {
