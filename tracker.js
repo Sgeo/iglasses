@@ -94,9 +94,14 @@ class Tracker {
                 return 0x04;
             }
         };
-        sockfs.websocket_sock_ops.recvmsg = function() {
-            let reply = tracker.reply;
-            tracker.reply = null;
+        sockfs.websocket_sock_ops.recvmsg = function(sock, length) {
+            let reply = tracker.reply.slice(0, length);
+            let remainder = tracker.reply.slice(length);
+            if(remainder.length !== 0) {
+                tracker.reply = remainder;
+            } else {
+                tracker.reply = null;
+            }
             return {
                 buffer: reply,
                 addr: "tracker.invalid",
