@@ -102,7 +102,6 @@ class Tracker {
             vrDisplay.getFrameData(frameData);
             let euler = [0, 0, 0];
             eulerFromQuaternion(euler, frameData.pose.orientation, "XYZ");
-            console.log(frameData.pose.orientation);
             [pitch, yaw, roll] = euler;
         } else {
             pitch = window.pitch || 0.0; // Radians

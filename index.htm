@@ -78,8 +78,8 @@ void main() {
         rightDegrees: 30
     };
     const IGLASSES_FOV_TAN = {
-        down: Math.tan(IGLASSES_FOV.downDegrees * Math.PI/180),
-        up: Math.tan(IGLASSES_FOV.upDegrees * Math.PI/180),
+        down: Math.tan(IGLASSES_FOV.downDegrees * Math.PI/180)*(3/4),
+        up: Math.tan(IGLASSES_FOV.upDegrees * Math.PI/180)*(3/4),
         left: Math.tan(IGLASSES_FOV.leftDegrees * Math.PI/180),
         right: Math.tan(IGLASSES_FOV.rightDegrees * Math.PI/180)
     };
