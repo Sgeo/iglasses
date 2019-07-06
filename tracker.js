@@ -1,3 +1,42 @@
+function eulerFromQuaternion(out, q, order) {
+  function clamp(value, min$$1, max$$1) {
+    return value < min$$1 ? min$$1 : value > max$$1 ? max$$1 : value;
+  }
+  var sqx = q[0] * q[0];
+  var sqy = q[1] * q[1];
+  var sqz = q[2] * q[2];
+  var sqw = q[3] * q[3];
+  if (order === 'XYZ') {
+    out[0] = Math.atan2(2 * (q[0] * q[3] - q[1] * q[2]), sqw - sqx - sqy + sqz);
+    out[1] = Math.asin(clamp(2 * (q[0] * q[2] + q[1] * q[3]), -1, 1));
+    out[2] = Math.atan2(2 * (q[2] * q[3] - q[0] * q[1]), sqw + sqx - sqy - sqz);
+  } else if (order === 'YXZ') {
+    out[0] = Math.asin(clamp(2 * (q[0] * q[3] - q[1] * q[2]), -1, 1));
+    out[1] = Math.atan2(2 * (q[0] * q[2] + q[1] * q[3]), sqw - sqx - sqy + sqz);
+    out[2] = Math.atan2(2 * (q[0] * q[1] + q[2] * q[3]), sqw - sqx + sqy - sqz);
+  } else if (order === 'ZXY') {
+    out[0] = Math.asin(clamp(2 * (q[0] * q[3] + q[1] * q[2]), -1, 1));
+    out[1] = Math.atan2(2 * (q[1] * q[3] - q[2] * q[0]), sqw - sqx - sqy + sqz);
+    out[2] = Math.atan2(2 * (q[2] * q[3] - q[0] * q[1]), sqw - sqx + sqy - sqz);
+  } else if (order === 'ZYX') {
+    out[0] = Math.atan2(2 * (q[0] * q[3] + q[2] * q[1]), sqw - sqx - sqy + sqz);
+    out[1] = Math.asin(clamp(2 * (q[1] * q[3] - q[0] * q[2]), -1, 1));
+    out[2] = Math.atan2(2 * (q[0] * q[1] + q[2] * q[3]), sqw + sqx - sqy - sqz);
+  } else if (order === 'YZX') {
+    out[0] = Math.atan2(2 * (q[0] * q[3] - q[2] * q[1]), sqw - sqx + sqy - sqz);
+    out[1] = Math.atan2(2 * (q[1] * q[3] - q[0] * q[2]), sqw + sqx - sqy - sqz);
+    out[2] = Math.asin(clamp(2 * (q[0] * q[1] + q[2] * q[3]), -1, 1));
+  } else if (order === 'XZY') {
+    out[0] = Math.atan2(2 * (q[0] * q[3] + q[1] * q[2]), sqw - sqx + sqy - sqz);
+    out[1] = Math.atan2(2 * (q[0] * q[2] + q[1] * q[3]), sqw + sqx - sqy - sqz);
+    out[2] = Math.asin(clamp(2 * (q[2] * q[3] - q[0] * q[1]), -1, 1));
+  } else {
+    console.log('No order given for quaternion to euler conversion.');
+    return;
+  }
+}
+
+
 class Tracker {
     constructor() {
         this.encoder = new TextEncoder();
@@ -54,18 +93,29 @@ class Tracker {
     }
     
     orientation() {
-
-        let pitch = window.pitch || 0.0; // Radians
-        let roll = window.roll || 0.0; // Radians
+        let pitch;
+        let roll;
+        let yaw;
         
-        let absolute_x = Math.cos(window.yaw || 0.0);
-        let absolute_y = 0.0;
-        let absolute_z = Math.sin(window.yaw || 0.0);
+        if(window.vrDisplay && window.vrDisplay.isPresenting) {
+            let frameData = new VRFrameData();
+            vrDisplay.getFrameData(frameData);
+            let euler = [0, 0, 0];
+            eulerFromQuaternion(euler, frameData.pose.orientation, "XYZ");
+            console.log(frameData.pose.orientation);
+            [pitch, yaw, roll] = euler;
+        } else {
+            pitch = window.pitch || 0.0; // Radians
+            roll = window.roll || 0.0; // Radians
+            yaw = window.yaw || 0.0;
+        }
+
+
         
         let antirotation = twgl.m4.identity();
         twgl.m4.rotateZ(antirotation, -roll, antirotation);
         twgl.m4.rotateX(antirotation, -pitch, antirotation);
-        let [x, y, z] = twgl.m4.transformDirection(antirotation, [absolute_x, absolute_y, absolute_z]);
+        let [x, y, z] = twgl.m4.transformDirection(antirotation, [Math.cos(yaw), 0.0, Math.sin(yaw)]);
         
         let result = new ArrayBuffer(12);
         let view = new DataView(result);
