@@ -2,31 +2,52 @@ class Tracker {
     constructor() {
         this.encoder = new TextEncoder();
         this.decoder = new TextDecoder();
+        this.OK = this.encoder.encode("O");
+        this.ERR = this.encoder.encode("E");
         this.reply = null;
+        
+        this.data_mode = "cooked";
+        this.send_mode = "polled";
+        this.send_format = "binary";
     }
     
     dispatch(command) {
         if(command === "!\r") {
             console.log("Pinged!");
-            this.reply = this.encoder.encode("O");
+            this.reply = this.OK;
+        } else if(command.startsWith("!M")) {
+            this.mode(command.slice(2, -1)); // Remove !M and \r
+        } else if(command === "!R\r") {
+            this.mode("1,P,B");
         }
+    }
+    
+    mode(modestring) {
+        let [data_mode, send_mode, send_format] = modestring.split(",");
+        if(data_mode === "1") {
+            this.data_mode = "cooked";
+        } else if(data_mode === "2") {
+            this.data_mode = "euler";
+        } else {
+            console.error("Unsupported data mode:", data_mode);
+            this.reply = this.ERR;
+            return;
+        }
+        if(send_mode === "P") {
+            this.send_mode = "polled";
+        } else {
+            console.error("Unsupported send mode:", send_mode);
+            this.reply = this.ERR;
+            return;
+        }
+        this.reply = this.OK;
     }
     
     install(sockfs) {
         let tracker = this;
         console.log(sockfs);
-        let createPeer = sockfs.websocket_sock_ops.createPeer;
-        let connect = sockfs.websocket_sock_ops.connect;
-        sockfs.websocket_sock_ops.createPeer = function(...args) {
-            console.log("createPeer(", args, ")");
-            let result = createPeer.apply(this, args);
-            console.log(result);
-            return result;
-        };
         sockfs.websocket_sock_ops.connect = function(...args) {
-            //let result = connect.apply(this, args);
-            //console.log(result);
-            //return result;
+
             throw new FS.ErrnoError(ERRNO_CODES.EINPROGRESS);
         };
         sockfs.websocket_sock_ops.poll = function() {
