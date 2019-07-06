@@ -13,7 +13,6 @@ class Tracker {
     
     dispatch(command) {
         if(command === "!\r") {
-            console.log("Pinged!");
             return this.OK;
         } else if(command.startsWith("!M")) {
             return this.mode(command.slice(2, -1)); // Remove !M and \r
@@ -80,7 +79,6 @@ class Tracker {
     
     install(sockfs) {
         let tracker = this;
-        console.log(sockfs);
         sockfs.websocket_sock_ops.connect = function(...args) {
 
             throw new FS.ErrnoError(ERRNO_CODES.EINPROGRESS);
@@ -111,20 +109,9 @@ class Tracker {
         sockfs.websocket_sock_ops.sendmsg = function(sock, buffer, offset, length, addr, port) {
             let incoming = buffer.slice(offset, offset+length);
             let command = tracker.decoder.decode(incoming);
-            console.log(command);
             tracker.reply = tracker.dispatch(command);
             return length;
         };
-        sockfs.websocket_sock_ops = new Proxy(sockfs.websocket_sock_ops, {
-            get(target, prop) {
-                return function(...args) {
-                    if(prop !== "poll") console.log(prop, "(", args, ")");
-                    let result = target[prop].apply(this, args);
-                    if(prop !== "poll") console.log(prop, " = ", result);
-                    return result;
-                }
-            }
-        });
     }
 }
 
