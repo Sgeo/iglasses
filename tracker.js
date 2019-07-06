@@ -19,6 +19,11 @@ class Tracker {
             return this.mode(command.slice(2, -1)); // Remove !M and \r
         } else if(command === "!R\r") {
             return this.mode("1,P,B");
+        } else if(command === "S") {
+            return this.orientation();
+        } else {
+            console.error("Unrecognized command:", command);
+            return this.ERR;
         }
     }
     
@@ -35,7 +40,15 @@ class Tracker {
         if(send_mode === "P") {
             this.send_mode = "polled";
         } else {
+            // TODO?: Continuous
             console.error("Unsupported send mode:", send_mode);
+            return this.ERR;
+        }
+        if(send_format === "B") {
+            this.send_format = "binary";
+        } else {
+            // TODO: ASCII
+            console.error("Unsupported send format:", send_format);
             return this.ERR;
         }
         return this.OK;
