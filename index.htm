@@ -204,7 +204,12 @@ void main() {
     }
     
     document.querySelector("#webvr-button").addEventListener("click", async function(e) {
-        await vrDisplay.requestPresent([{ source: document.querySelector("#webgl") }]);
+        let webglCanvas = document.querySelector("#webgl");
+        let leftEye = vrDisplay.getEyeParameters("left");
+        let rightEye = vrDisplay.getEyeParameters("right");
+        webglCanvas.style.width = (Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2) + "px";
+        webglCanvas.style.height = Math.max(leftEye.renderHeight, rightEye.renderHeight) + "px";
+        await vrDisplay.requestPresent([{ source: webglCanvas }]);
     });
   </script>
 </body>
