@@ -175,7 +175,7 @@ void main() {
                                                                          DosBoxLoader.fetchFile("Magic Carpet i-Glasses driver",
                                                                                                 "carpet.zip")),
                                                    DosBoxLoader.mountFile("dosbox.conf", DosBoxLoader.localFile("DosBox.conf", "[serial]\nserial1=nullmodem server:tracker.invalid port:8000 transparent:1 telnet:0")),
-												   DosBoxLoader.mountFile("magiccarpet.iso", DosBoxLoader.fetchFile("Magic Carpet", "magiccarpet.iso"), "cdrom"),
+												   DosBoxLoader.mountFile("magiccarpet.iso", DosBoxLoader.fetchFile("Magic Carpet", "https://cors.archive.org/cors/magiccarpetiso/magiccarpet.iso")),
                                                    DosBoxLoader.startExe(""),
                                                    DosBoxLoader.extraArgs([ "-conf", "dosbox.conf", "-c", "imgmount d /emulator/magiccarpet.iso -t cdrom", "-c", "D:", "-c", "C:\\VIO\\CARPET.EXE -vio1"])));
                                                    
