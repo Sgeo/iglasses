@@ -204,6 +204,7 @@ void main() {
     }
     
     document.querySelector("#webvr-button").addEventListener("click", async function(e) {
+		document.querySelector("#jsdos").requestPointerLock();
         let webglCanvas = document.querySelector("#webgl");
         let leftEye = vrDisplay.getEyeParameters("left");
         let rightEye = vrDisplay.getEyeParameters("right");
