@@ -1,4 +1,5 @@
 function eulerFromQuaternion(out, q, order) {
+  // From https://github.com/immersive-web/webxr-polyfill/blob/master/src/lib/OrientationArmModel.js
   function clamp(value, min$$1, max$$1) {
     return value < min$$1 ? min$$1 : value > max$$1 ? max$$1 : value;
   }
@@ -101,7 +102,7 @@ class Tracker {
             let frameData = new VRFrameData();
             vrDisplay.getFrameData(frameData);
             let euler = [0, 0, 0];
-            eulerFromQuaternion(euler, frameData.pose.orientation, "XYZ");
+            eulerFromQuaternion(euler, frameData.pose.orientation, "YXZ");
             [pitch, yaw, roll] = euler;
         } else {
             pitch = window.pitch || 0.0; // Radians
