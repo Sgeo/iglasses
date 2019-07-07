@@ -60,7 +60,9 @@ class Tracker {
             return this.mode("1,P,B");
         } else if(command === "S") {
             return this.orientation();
-        } else {
+        } else if(command === "!V\r") {
+			return this.encoder.encode("MSgeoComet0000000PWebVRWebVRWebVR0TWebVR000H000.000F000.000O");
+		} else {
             console.error("Unrecognized command:", command);
             return this.ERR;
         }
@@ -166,8 +168,22 @@ class Tracker {
         sockfs.websocket_sock_ops.sendmsg = function(sock, buffer, offset, length, addr, port) {
             let incoming = buffer.slice(offset, offset+length);
             let command = tracker.decoder.decode(incoming);
-            tracker.reply = tracker.dispatch(command);
-            return length;
+			let newline_index = command.indexOf("\r");
+			let S_index = command.indexOf("S");
+			let terminal_index;
+			if(newline_index === -1 && S_index === -1) {
+				return 0;
+			}
+			if(newline_index === -1) {
+				terminal_index = S_index;
+			} else if(S_index === -1) {
+				terminal_index = newline_index;
+			} else {
+				terminal_index = Math.min(newline_index, S_index);
+			}			
+			// Include +1 because we consume the terminator
+            tracker.reply = tracker.dispatch(command.slice(0, terminal_index+1));
+            return terminal_index+1;
         };
     }
 }
