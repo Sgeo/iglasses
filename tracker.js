@@ -49,7 +49,7 @@ class Antifilter {
 	filter(newval) {
 		let current = this.current;
 		let last = this.current;
-		this.history[this.current] = newval; // To substitute later
+		this.history[this.current] = 0; // To substitute later.
 		this.current += 1;
 		if(this.current == this.len) {
 			this.current = 0;
