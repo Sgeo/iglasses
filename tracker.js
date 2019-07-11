@@ -40,7 +40,7 @@ function eulerFromQuaternion(out, q, order) {
 class Antifilter {
 	constructor(len) {
 		this.history = new Array(len);
-		this.history.fill(0);
+		this.history.fill(1);
 		this.len = len;
 		this.current = 0;
 		this.end = len-1;
