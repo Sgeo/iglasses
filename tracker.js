@@ -37,6 +37,40 @@ function eulerFromQuaternion(out, q, order) {
   }
 }
 
+class Antifilter {
+	constructor(len) {
+		this.history = new Array(len);
+		this.history.fill(0);
+		this.len = len;
+		this.current = 0;
+		this.end = len-1;
+	}
+	
+	filter(newval) {
+		let current = this.current;
+		let last = this.current;
+		this.history[this.current] = newval; // To substitute later
+		this.current += 1;
+		if(this.current == this.len) {
+			this.current = 0;
+		}
+		let sum = 0;
+		while(true) {
+			sum += this.history[current];
+			current -= 1;
+			if(current === -1) {
+				current = this.end;
+			}
+			if(current === last) {
+				break;
+			}
+		}
+		let replacement = this.len * newval - sum;
+		this.history[last] = replacement;
+		return replacement;
+	}
+}
+
 
 class Tracker {
     constructor() {
@@ -49,6 +83,16 @@ class Tracker {
         this.data_mode = "cooked";
         this.send_mode = "polled";
         this.send_format = "binary";
+		
+		this.antifilters = {
+			"x": new Antifilter(3),
+			"y": new Antifilter(3),
+			"z": new Antifilter(3),
+			"pitch": new Antifilter(6),
+			"roll": new Antifilter(6)
+		};
+		
+		this.use_antifilter = false;
     }
     
     dispatch(command) {
@@ -118,6 +162,14 @@ class Tracker {
         twgl.m4.rotateZ(antirotation, -roll, antirotation);
         twgl.m4.rotateX(antirotation, -pitch, antirotation);
         let [x, y, z] = twgl.m4.transformDirection(antirotation, [Math.cos(yaw), 0.0, Math.sin(yaw)]);
+		
+		if(this.use_antifilter) {
+			x = this.antifilters.x.filter(x);
+			y = this.antifilters.y.filter(y);
+			z = this.antifilters.z.filter(z);
+			pitch = this.antifilters.pitch.filter(pitch);
+			roll = this.antifilters.roll.filter(roll);
+		}
         
         let result = new ArrayBuffer(12);
         let view = new DataView(result);

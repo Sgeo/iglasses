@@ -20,6 +20,7 @@
 <body>
   <canvas id="jsdos"></canvas>
   
+  <label for="antifilter">Antifilter (experimental):</label><input id="antifilter" type="checkbox">
 
   <canvas id="webgl"></canvas>
   <button id="fullscreen">Fullscreen</button>
@@ -181,6 +182,9 @@ void main() {
       emulator.setCallbacks({
         before_run: function() {
           var tracker = new Tracker();
+		  document.querySelector("#antifilter").addEventListener("change", function(e) {
+			tracker.use_antifilter = this.checked;
+		  }, false);
           tracker.install(SOCKFS);
           Module['websocket']['on']('error', function(error) {console.log('Socket error ' + error);});
         }
