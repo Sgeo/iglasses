@@ -47,6 +47,9 @@ class Antifilter {
 	}
 	
 	filter(newval) {
+  function clamp(value, min$$1, max$$1) {
+    return value < min$$1 ? min$$1 : value > max$$1 ? max$$1 : value;
+  }
 		let current = this.current;
 		let last = this.current;
 		this.history[this.current] = 0; // To substitute later.
@@ -65,7 +68,7 @@ class Antifilter {
 				break;
 			}
 		}
-		let replacement = this.len * newval - sum;
+		let replacement = clamp(this.len * newval - sum, -1.5, 1.5);
 		this.history[last] = replacement;
 		return replacement;
 	}
