@@ -147,11 +147,10 @@ class Tracker {
         let roll;
         let yaw;
         
-        if(window.vrDisplay && window.vrDisplay.isPresenting) {
-            let frameData = new VRFrameData();
-            vrDisplay.getFrameData(frameData);
+        if(window.xrSession && window.latestPose) {
             let euler = [0, 0, 0];
-            eulerFromQuaternion(euler, frameData.pose.orientation, "YXZ");
+            let arrayOrientation = [window.latestPose.transform.orientation.x, window.latestPose.transform.orientation.y, window.latestPose.transform.orientation.z, window.latestPose.transform.orientation.w];
+            eulerFromQuaternion(euler, arrayOrientation, "YXZ");
             [pitch, yaw, roll] = euler;
         } else {
             pitch = window.pitch || 0.0; // Radians
