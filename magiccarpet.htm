@@ -20,10 +20,11 @@
 <body>
   <canvas id="jsdos"></canvas>
   
+  <label for="antifilter">Antifilter (experimental):</label><input id="antifilter" type="checkbox">
 
   <canvas id="webgl"></canvas>
   <button id="fullscreen">Fullscreen</button>
-  <button id="webvr-button" disabled>WebVR (under construction)</button>
+  <button id="webxr-button" disabled>WebXR (under construction)</button>
   
   
   
@@ -86,7 +87,7 @@ void main() {
   </script>
   <script>
     "use strict";
-    const gl = document.querySelector("#webgl").getContext("webgl2");
+    const gl = document.querySelector("#webgl").getContext("webgl2", {xrCompatible: true});
     const programInfo = twgl.createProgramInfo(gl, ["vs", "fs"]);
     let left = IGLASSES_FOV_TAN.left;
     let right = IGLASSES_FOV_TAN.right;
@@ -114,24 +115,33 @@ void main() {
     const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
-    function render(time) {
-      let vr = window.vrDisplay && window.vrDisplay.isPresenting;
+    function render(time, frame) {
+      let vr = window.xrSession && frame;
+      let pose = null;
+      if(vr) {
+        pose = frame.getViewerPose(xrReferenceSpace);
+        if(!pose) vr=false;
+      }
+      if(vr) {
+        window.latestPose = pose; // Used by the tracker. Needs to be cleaned up
+        gl.bindFramebuffer(gl.FRAMEBUFFER, xrSession.renderState.baseLayer.framebuffer);
+      } else {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      }
       twgl.resizeCanvasToDisplaySize(gl.canvas);
       
       
       const jsdosTexture = twgl.createTexture(gl, { src: jsdosCanvas });
 
-      gl.viewport(0, 0, gl.canvas.width/2, gl.canvas.height);
       
-      if(vr) {
-        var frameData = new VRFrameData();
-        vrDisplay.getFrameData(frameData);
-      }
       
       let projection;
       if(vr) {
-        projection = frameData.leftProjectionMatrix;
+        let viewport = xrSession.renderState.baseLayer.getViewport(pose.views[0]);
+        gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+        projection = pose.views[0].projectionMatrix;
       } else {
+        gl.viewport(0, 0, gl.canvas.width/2, gl.canvas.height);
         projection = twgl.m4.identity();
       }
       const uniforms = {
@@ -144,16 +154,19 @@ void main() {
       twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
       twgl.setUniforms(programInfo, uniforms);
       twgl.drawBufferInfo(gl, bufferInfo);
-      gl.viewport(gl.canvas.width/2, 0, gl.canvas.width/2, gl.canvas.height);
+      
       if(vr) {
-        projection = frameData.rightProjectionMatrix;
+        let viewport = xrSession.renderState.baseLayer.getViewport(pose.views[1]);
+        gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+        projection = pose.views[1].projectionMatrix;
         twgl.setUniforms(programInfo, {projection: projection});
+      } else {
+        gl.viewport(gl.canvas.width/2, 0, gl.canvas.width/2, gl.canvas.height);
       }
       twgl.setUniforms(programInfo, {side: 1});
       twgl.drawBufferInfo(gl, bufferInfo);
-      if(window.vrDisplay && window.vrDisplay.isPresenting) {
-        vrDisplay.submitFrame();
-        vrDisplay.requestAnimationFrame(render);
+      if(window.xrSession) {
+        xrSession.requestAnimationFrame(render);
       } else {
         requestAnimationFrame(render);
       }
@@ -183,6 +196,9 @@ void main() {
         before_run: function() {
           var tracker = new Tracker();
           tracker.install(SOCKFS);
+		  document.querySelector("#antifilter").addEventListener("change", function(e) {
+			tracker.use_antifilter = this.checked;
+		  }, false);
           Module['websocket']['on']('error', function(error) {console.log('Socket error ' + error);});
         }
       });
@@ -193,27 +209,29 @@ void main() {
     </script>
     <script type="text/javascript">
     
-    document.querySelector("#fullscreen").addEventListener("click", function(e) {
-        document.querySelector("#webgl").requestFullscreen();
-    });
-    
-    if(navigator.getVRDisplays) {
-        navigator.getVRDisplays().then(displays => {
-            window.vrDisplay = displays[0];
-            document.querySelector("#webvr-button").disabled = false;
-        });
-    }
-    
-    document.querySelector("#webvr-button").addEventListener("click", async function(e) {
-		document.querySelector("#jsdos").requestPointerLock();
-        let webglCanvas = document.querySelector("#webgl");
-        let leftEye = vrDisplay.getEyeParameters("left");
-        let rightEye = vrDisplay.getEyeParameters("right");
-        webglCanvas.style.width = (Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2) + "px";
-        webglCanvas.style.height = Math.max(leftEye.renderHeight, rightEye.renderHeight) + "px";
-        await vrDisplay.requestPresent([{ source: webglCanvas }]);
-    });
-  </script>
-</body>
-
-</html>
+      document.querySelector("#fullscreen").addEventListener("click", function(e) {
+          document.querySelector("#webgl").requestFullscreen();
+      });
+      
+      if(navigator.xr) {
+          navigator.xr.isSessionSupported("immersive-vr").then(supported => {
+              if(supported) document.querySelector("#webxr-button").disabled = false;
+          });
+      }
+      
+      document.querySelector("#webxr-button").addEventListener("click", async function(e) {
+          document.querySelector("#jsdos").requestPointerLock();
+          let webglCanvas = document.querySelector("#webgl");
+          let gl = webglCanvas.getContext("webgl2", {xrCompatible: true});
+          window.xrSession = await navigator.xr.requestSession("immersive-vr");
+          window.xrSession.addEventListener("end", () => {
+            window.xrSession = null;
+          });
+          window.xrReferenceSpace = await xrSession.requestReferenceSpace("local");
+          let xrLayer = new XRWebGLLayer(window.xrSession, gl);
+          window.xrSession.updateRenderState({baseLayer: xrLayer});
+      });
+    </script>
+  </body>
+  
+  </html>
