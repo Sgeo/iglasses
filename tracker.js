@@ -173,19 +173,37 @@ class Tracker {
 			roll = this.antifilters.roll.filter(roll);
 		}
         
-        let result = new ArrayBuffer(12);
-        let view = new DataView(result);
-        view.setInt8(0, 0xFF);
-        view.setInt16(1, x * 16384, false);
-        view.setInt16(3, y * 16384, false);
-        view.setInt16(5, z * 16384, false);
-        view.setInt16(7, pitch/Math.PI*16384, false);
-        view.setInt16(9, roll/Math.PI*16384, false);
-        let checksum = 0;
-        for(let i=0; i<=10; i++) {
-            checksum += view.getUint8(i);
+        let result;
+        if(this.data_mode === 'cooked') {
+            result = new ArrayBuffer(12);
+            let view = new DataView(result);
+            view.setInt8(0, 0xFF);
+            view.setInt16(1, x * 16384, false);
+            view.setInt16(3, y * 16384, false);
+            view.setInt16(5, z * 16384, false);
+            view.setInt16(7, pitch/Math.PI*16384, false);
+            view.setInt16(9, roll/Math.PI*16384, false);
+            let checksum = 0;
+            for(let i=0; i<=10; i++) {
+                checksum += view.getUint8(i);
+            }
+            view.setUint8(11, checksum);
+        } else if(this.data_mode === 'euler') {
+            result = new ArrayBuffer(8);
+            let view = new DataView(result);
+            view.setInt8(0, 0xFF);
+            view.setInt16(1, yaw * 16384/Math.PI, false);
+            view.setInt16(3, pitch * 16384/Math.PI, false);
+            view.setInt16(5, roll * 16384/Math.PI, false);
+            let checksum = 0;
+            for(let i=0; i<=6; i++) {
+                checksum += view.getUint8(i);
+            }
+            view.setUint8(7, checksum);
+        } else {
+            console.error("Unsupported data mode!", this.data_mode);
         }
-        view.setUint8(11, checksum);
+
         
         return new Uint8Array(result);
     }
