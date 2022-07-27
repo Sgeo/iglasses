@@ -54,7 +54,7 @@ const IGLASSES_FOV_TAN = {
     right: Math.tan(IGLASSES_FOV.rightDegrees * Math.PI/180)
 };
 
-class Emulator {
+class VREmulator {
     constructor(options) {
         this.jsdosElement = options.jsdosElement;
         this.webglElement = options.webglElement;
@@ -63,12 +63,12 @@ class Emulator {
             event.preventDefault();
         });
 
-        this.webglElement.addEventListener("webglcontextrestored", init, false);
+        this.webglElement.addEventListener("webglcontextrestored", () => this.init, false);
     }
 
     init() {
         this.gl = this.webglElement.getContext("webgl2", {xrCompatible: true});
-        this.programInfo = twgl.createProgramInfo(this.gl, ["vs", "fs"]);
+        this.programInfo = twgl.createProgramInfo(this.gl, [SHADERS.vs, SHADERS.fs]);
         let left = IGLASSES_FOV_TAN.left;
         let right = IGLASSES_FOV_TAN.right;
         let up = IGLASSES_FOV_TAN.up;
@@ -124,11 +124,11 @@ class Emulator {
         
         let projection;
         if(vr) {
-          let viewport = xrSession.renderState.baseLayer.getViewport(pose.views[0]);
+          let viewport = this.xrSession.renderState.baseLayer.getViewport(pose.views[0]);
           this.gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
           projection = pose.views[0].projectionMatrix;
         } else {
-          this.gl.viewport(0, 0, gl.canvas.width/2, gl.canvas.height);
+          this.gl.viewport(0, 0, this.gl.canvas.width/2, this.gl.canvas.height);
           projection = twgl.m4.identity();
         }
         const uniforms = {
@@ -137,25 +137,25 @@ class Emulator {
           projection: projection
         };
   
-        this.gl.useProgram(programInfo.program);
-        twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
-        twgl.setUniforms(programInfo, uniforms);
-        twgl.drawBufferInfo(gl, bufferInfo);
+        this.gl.useProgram(this.programInfo.program);
+        twgl.setBuffersAndAttributes(this.gl, this.programInfo, this.bufferInfo);
+        twgl.setUniforms(this.programInfo, uniforms);
+        twgl.drawBufferInfo(this.gl, this.bufferInfo);
         
         if(vr) {
-          let viewport = xrSession.renderState.baseLayer.getViewport(pose.views[1]);
+          let viewport = this.xrSession.renderState.baseLayer.getViewport(pose.views[1]);
           this.gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
           projection = pose.views[1].projectionMatrix;
-          twgl.setUniforms(programInfo, {projection: projection});
+          twgl.setUniforms(this.programInfo, {projection: projection});
         } else {
-          this.gl.viewport(gl.canvas.width/2, 0, gl.canvas.width/2, gl.canvas.height);
+          this.gl.viewport(this.gl.canvas.width/2, 0, this.gl.canvas.width/2, this.gl.canvas.height);
         }
-        twgl.setUniforms(programInfo, {side: 1});
-        twgl.drawBufferInfo(this.gl, bufferInfo);
-        if(window.xrSession) {
-          xrSession.requestAnimationFrame(render);
+        twgl.setUniforms(this.programInfo, {side: 1});
+        twgl.drawBufferInfo(this.gl, this.bufferInfo);
+        if(this.xrSession) {
+          this.xrSession.requestAnimationFrame(this.render.bind(this));
         } else {
-          requestAnimationFrame(render);
+          requestAnimationFrame(this.render.bind(this));
         }
     }
 }

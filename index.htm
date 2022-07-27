@@ -26,94 +26,13 @@
   <button id="fullscreen">Fullscreen</button>
   <button id="webxr-button" disabled>WebXR (under construction)</button>
   <script src="twgl-full.min.js"></script>
+  <script src="emulator.js"></script>
   <script>
-    "use strict";
-    const gl = document.querySelector("#webgl").getContext("webgl2", {xrCompatible: true});
-    const programInfo = twgl.createProgramInfo(gl, ["vs", "fs"]);
-    let left = IGLASSES_FOV_TAN.left;
-    let right = IGLASSES_FOV_TAN.right;
-    let up = IGLASSES_FOV_TAN.up;
-    let down = IGLASSES_FOV_TAN.down;
-
-    const arrays = {
-      position: [
-      -left, -down, -1,
-      right, -down, -1,
-      -left, up, -1,
-      -left, up, -1,
-      right, -down, -1,
-      right, up, -1],
-      uv: {numComponents: 2, data: [
-        0, 0,
-        1, 0,
-        0, 1,
-        0, 1,
-        1, 0,
-        1, 1
-      ]}
-    };
-    const jsdosCanvas = document.querySelector("#jsdos");
-    const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-
-    function render(time, frame) {
-      let vr = window.xrSession && frame;
-      let pose = null;
-      if(vr) {
-        pose = frame.getViewerPose(xrReferenceSpace);
-        if(!pose) vr=false;
-      }
-      if(vr) {
-        window.latestPose = pose; // Used by the tracker. Needs to be cleaned up
-        gl.bindFramebuffer(gl.FRAMEBUFFER, xrSession.renderState.baseLayer.framebuffer);
-      } else {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      }
-      twgl.resizeCanvasToDisplaySize(gl.canvas);
-      
-      
-      const jsdosTexture = twgl.createTexture(gl, { src: jsdosCanvas });
-
-      
-      
-      let projection;
-      if(vr) {
-        let viewport = xrSession.renderState.baseLayer.getViewport(pose.views[0]);
-        gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
-        projection = pose.views[0].projectionMatrix;
-      } else {
-        gl.viewport(0, 0, gl.canvas.width/2, gl.canvas.height);
-        projection = twgl.m4.identity();
-      }
-      const uniforms = {
-        jsdos: jsdosTexture,
-        side: 0,
-        projection: projection
-      };
-
-      gl.useProgram(programInfo.program);
-      twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
-      twgl.setUniforms(programInfo, uniforms);
-      twgl.drawBufferInfo(gl, bufferInfo);
-      
-      if(vr) {
-        let viewport = xrSession.renderState.baseLayer.getViewport(pose.views[1]);
-        gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
-        projection = pose.views[1].projectionMatrix;
-        twgl.setUniforms(programInfo, {projection: projection});
-      } else {
-        gl.viewport(gl.canvas.width/2, 0, gl.canvas.width/2, gl.canvas.height);
-      }
-      twgl.setUniforms(programInfo, {side: 1});
-      twgl.drawBufferInfo(gl, bufferInfo);
-      if(window.xrSession) {
-        xrSession.requestAnimationFrame(render);
-      } else {
-        requestAnimationFrame(render);
-      }
-      
-    }
-    requestAnimationFrame(render);
+  let vremulator = new VREmulator({
+    jsdosElement: document.querySelector("#jsdos"),
+    webglElement: document.querySelector("#webgl")
+  });
+  vremulator.init();
   </script>
     <script type="text/javascript" src="browserfs.min.js"></script>
     <script type="text/javascript" src="loader.js"></script>
