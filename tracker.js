@@ -147,7 +147,7 @@ class Tracker {
         let roll;
         let yaw;
         
-        if(window.xrSession && window.latestPose) {
+        if(window.latestPose) {
             let euler = [0, 0, 0];
             let arrayOrientation = [window.latestPose.transform.orientation.x, window.latestPose.transform.orientation.y, window.latestPose.transform.orientation.z, window.latestPose.transform.orientation.w];
             eulerFromQuaternion(euler, arrayOrientation, "YXZ");
