@@ -24,7 +24,7 @@
 
   <canvas id="webgl"></canvas>
   <button id="fullscreen">Fullscreen</button>
-  <button id="webxr-button" disabled>WebXR (under construction)</button>
+  <button id="webxr-button" disabled>WebXR</button>
   <script src="twgl-full.min.js"></script>
   <script src="emulator.js"></script>
   <script>
@@ -82,13 +82,13 @@
 		    document.querySelector("#jsdos").requestPointerLock();
         let webglCanvas = document.querySelector("#webgl");
         let gl = webglCanvas.getContext("webgl2", {xrCompatible: true});
-        window.xrSession = await navigator.xr.requestSession("immersive-vr");
-        window.xrSession.addEventListener("end", () => {
-          window.xrSession = null;
+        vremulator.xrSession = await navigator.xr.requestSession("immersive-vr");
+        vremulator.xrSession.addEventListener("end", () => {
+          vremulator.xrSession = null;
         });
-        window.xrReferenceSpace = await xrSession.requestReferenceSpace("local");
-        let xrLayer = new XRWebGLLayer(window.xrSession, gl);
-        window.xrSession.updateRenderState({baseLayer: xrLayer});
+        vremulator.xrReferenceSpace = await vremulator.xrSession.requestReferenceSpace("local");
+        let xrLayer = new XRWebGLLayer(vremulator.xrSession, gl);
+        vremulator.xrSession.updateRenderState({baseLayer: xrLayer});
     });
   </script>
 </body>

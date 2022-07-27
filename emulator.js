@@ -99,14 +99,14 @@ class VREmulator {
         this.render();
     }
 
-    render() {
+    render(time, frame) {
         if(this.gl.isContextLost()) {
             return;
         }
         let vr = this.xrSession && frame;
         let pose = null;
         if(vr) {
-          pose = frame.getViewerPose(xrReferenceSpace);
+          pose = frame.getViewerPose(this.xrReferenceSpace);
           if(!pose) vr=false;
         }
         if(vr) {
